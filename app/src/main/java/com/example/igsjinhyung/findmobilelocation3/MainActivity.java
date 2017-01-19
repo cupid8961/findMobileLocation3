@@ -92,20 +92,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // TODO : click event
-                Toast.makeText(mContext, "서버에 통신중", Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "btn_sendServer");
-
-
-                TelephonyManager telManager = (TelephonyManager)mContext.getSystemService(mContext.TELEPHONY_SERVICE);
-                String phone_num = telManager.getLine1Number();
-
-                phone_num = phone_num.replace("+82", "0");
-
-                Log.i(TAG, "phone_num : "+phone_num);
-
-                InsertData task = new InsertData();
-                task.execute((String)phone_num,""+latitude,""+longitude,""+b_per);
-
+                send_data();
 
 
 
@@ -140,6 +127,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void send_data(){
+        Toast.makeText(mContext, "서버에 통신중", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "btn_sendServer");
+        TelephonyManager telManager = (TelephonyManager)mContext.getSystemService(mContext.TELEPHONY_SERVICE);
+        String phone_num = telManager.getLine1Number();
+
+        phone_num = phone_num.replace("+82", "0");
+        Log.i(TAG, "phone_num : "+phone_num);
+
+        InsertData task = new InsertData();
+        task.execute((String)phone_num,""+latitude,""+longitude,""+b_per);
+
+
+    }
     // ��ε�ĳ��Ʈ ������ ��� ����
     public void onDestroy() {
         super.onDestroy();
@@ -152,6 +153,9 @@ public class MainActivity extends AppCompatActivity {
         int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
         int percent = (int) ((float) level / (float) scale * 100.);
         b_per = percent;
+        if (percent<5){
+            send_data();
+        }
         mTextLevel.setText("Level - " + percent + "%");
     }
 
@@ -161,8 +165,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (strAction == Intent.ACTION_BATTERY_CHANGED)
             mTextAction.setText("Battery Changed");
-        else if (strAction == Intent.ACTION_BATTERY_LOW)
+        else if (strAction == Intent.ACTION_BATTERY_LOW) {
             mTextAction.setText("Battery Low");
+            send_data();
+        }
         else if (strAction == Intent.ACTION_BATTERY_OKAY)
             mTextAction.setText("Battery OK");
         else if (strAction == Intent.ACTION_POWER_CONNECTED)
